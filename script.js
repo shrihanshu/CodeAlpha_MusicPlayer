@@ -63,6 +63,7 @@ class MusicPlayer {
         this.uploadBtn = document.getElementById('upload-btn');
         this.clearPlaylistBtn = document.getElementById('clear-playlist');
         this.sortSelect = document.getElementById('sort-playlist');
+        this.demoPlaylistsSelect = document.getElementById('demo-playlists');
         
         // Visualizer
         this.canvas = document.getElementById('visualizer');
@@ -99,6 +100,7 @@ class MusicPlayer {
         // Playlist controls
         this.clearPlaylistBtn.addEventListener('click', () => this.clearPlaylist());
         this.sortSelect.addEventListener('change', (e) => this.sortPlaylist(e.target.value));
+        this.demoPlaylistsSelect.addEventListener('change', (e) => this.loadDemoPlaylist(e.target.value));
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
@@ -702,6 +704,133 @@ class MusicPlayer {
     
     hideLoading() {
         this.playPauseBtn.style.opacity = '1';
+    }
+    
+    // Demo playlists data
+    getDemoPlaylists() {
+        return {
+            'pop-hits': {
+                name: '🎵 Pop Hits',
+                tracks: [
+                    { title: 'Blinding Lights', artist: 'The Weeknd', duration: 200 },
+                    { title: 'Watermelon Sugar', artist: 'Harry Styles', duration: 174 },
+                    { title: 'Levitating', artist: 'Dua Lipa', duration: 203 },
+                    { title: 'Good 4 U', artist: 'Olivia Rodrigo', duration: 178 },
+                    { title: 'Stay', artist: 'The Kid LAROI & Justin Bieber', duration: 141 },
+                    { title: 'Anti-Hero', artist: 'Taylor Swift', duration: 200 },
+                    { title: 'As It Was', artist: 'Harry Styles', duration: 167 }
+                ]
+            },
+            'rock-classics': {
+                name: '🎸 Rock Classics',
+                tracks: [
+                    { title: 'Bohemian Rhapsody', artist: 'Queen', duration: 355 },
+                    { title: 'Hotel California', artist: 'Eagles', duration: 391 },
+                    { title: 'Stairway to Heaven', artist: 'Led Zeppelin', duration: 482 },
+                    { title: 'Sweet Child O\' Mine', artist: 'Guns N\' Roses', duration: 356 },
+                    { title: 'November Rain', artist: 'Guns N\' Roses', duration: 537 },
+                    { title: 'Don\'t Stop Believin\'', artist: 'Journey', duration: 251 },
+                    { title: 'Free Bird', artist: 'Lynyrd Skynyrd', duration: 548 }
+                ]
+            },
+            'jazz-lounge': {
+                name: '🎷 Jazz Lounge',
+                tracks: [
+                    { title: 'Take Five', artist: 'Dave Brubeck', duration: 324 },
+                    { title: 'Blue in Green', artist: 'Miles Davis', duration: 337 },
+                    { title: 'So What', artist: 'Miles Davis', duration: 563 },
+                    { title: 'Autumn Leaves', artist: 'Bill Evans', duration: 456 },
+                    { title: 'All Blues', artist: 'Miles Davis', duration: 691 },
+                    { title: 'Giant Steps', artist: 'John Coltrane', duration: 287 },
+                    { title: 'Round Midnight', artist: 'Thelonious Monk', duration: 382 }
+                ]
+            },
+            'electronic-vibes': {
+                name: '🎛️ Electronic Vibes',
+                tracks: [
+                    { title: 'One More Time', artist: 'Daft Punk', duration: 320 },
+                    { title: 'Strobe', artist: 'Deadmau5', duration: 636 },
+                    { title: 'Midnight City', artist: 'M83', duration: 244 },
+                    { title: 'Language', artist: 'Porter Robinson', duration: 387 },
+                    { title: 'Shelter', artist: 'Porter Robinson & Madeon', duration: 213 },
+                    { title: 'Ghosts \'n\' Stuff', artist: 'Deadmau5', duration: 324 },
+                    { title: 'Genesis', artist: 'Justice', duration: 244 }
+                ]
+            },
+            'indie-favorites': {
+                name: '🎭 Indie Favorites',
+                tracks: [
+                    { title: 'Mr. Brightside', artist: 'The Killers', duration: 222 },
+                    { title: 'Take Me Out', artist: 'Franz Ferdinand', duration: 237 },
+                    { title: 'Time to Dance', artist: 'The Sounds', duration: 195 },
+                    { title: 'Electric Feel', artist: 'MGMT', duration: 228 },
+                    { title: 'Pumped Up Kicks', artist: 'Foster the People', duration: 238 },
+                    { title: 'Somebody Told Me', artist: 'The Killers', duration: 197 },
+                    { title: 'Float On', artist: 'Modest Mouse', duration: 208 }
+                ]
+            },
+            'chill-out': {
+                name: '😌 Chill Out',
+                tracks: [
+                    { title: 'Weightless', artist: 'Marconi Union', duration: 485 },
+                    { title: 'Teardrop', artist: 'Massive Attack', duration: 329 },
+                    { title: 'Porcelain', artist: 'Moby', duration: 240 },
+                    { title: 'Breathe Me', artist: 'Sia', duration: 268 },
+                    { title: 'Mad World', artist: 'Gary Jules', duration: 189 },
+                    { title: 'The Night We Met', artist: 'Lord Huron', duration: 207 },
+                    { title: 'Holocene', artist: 'Bon Iver', duration: 337 }
+                ]
+            }
+        };
+    }
+    
+    loadDemoPlaylist(playlistKey) {
+        if (!playlistKey) return;
+        
+        const demoPlaylists = this.getDemoPlaylists();
+        const selectedPlaylist = demoPlaylists[playlistKey];
+        
+        if (!selectedPlaylist) return;
+        
+        // Clear current playlist
+        this.playlist = [];
+        this.originalOrder = [];
+        this.currentTrackIndex = 0;
+        
+        // Create demo tracks with mock audio data
+        selectedPlaylist.tracks.forEach(trackData => {
+            const track = this.createDemoTrack(trackData);
+            this.playlist.push(track);
+            this.originalOrder.push(track);
+        });
+        
+        // Render the playlist
+        this.renderPlaylist();
+        
+        // Load first track
+        if (this.playlist.length > 0) {
+            this.loadTrack(0);
+        }
+        
+        // Reset dropdown
+        this.demoPlaylistsSelect.value = '';
+        
+        // Show success message
+        this.showMessage(`Loaded ${selectedPlaylist.name} playlist with ${this.playlist.length} tracks`);
+    }
+    
+    createDemoTrack(trackData) {
+        // Create a silent audio data URL for demo purposes
+        const silentAudioData = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmczBTGH0vDZhjkIHm7A7+OZURE/ctXQ3ZM+CRpqwPDhlSkEKnbH7+OQQAkTXrTp7qpVEAhEnt7zvGY0BTCFze/agjcFKG280dpaSDMfcsXmfzIrCRpbWWj7rCqyFTGBz+/ZgjoGK3O79NqCOQUraLzy2Y8+CRdPs+dZe4E0BSGDz+/YgTsBK2u89NiCOAYSccXk6HRUBzZKZTlEf0c7Hyiw4f/ijiME';
+        
+        return {
+            id: Date.now() + Math.random(),
+            title: trackData.title,
+            artist: trackData.artist,
+            src: silentAudioData,
+            duration: trackData.duration,
+            isDemoTrack: true
+        };
     }
 }
 
